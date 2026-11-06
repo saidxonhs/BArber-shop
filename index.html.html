@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS BARBER — Beyond The Style</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nexus: {
+                            bg: '#08090B',
+                            dark: '#111318',
+                            card: '#171A20',
+                            chrome: '#B9C1CB',
+                            lime: '#B7FF36',
+                            muted: '#858B94',
+                            border: 'rgba(185, 193, 203, 0.15)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    boxShadow: {
+                        'neon-lime': '0 0 25px rgba(183, 255, 54, 0.35)',
+                        'neon-glow': '0 0 15px rgba(183, 255, 54, 0.2)',
+                        'chrome': '0 10px 30px -10px rgba(185, 193, 203, 0.2)'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            background-color: #08090B;
+            color: #FFFFFF;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            background: rgba(23, 26, 32, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(185, 193, 203, 0.12);
+        }
+
+        .glass-nav {
+            background: rgba(8, 9, 11, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(185, 193, 203, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(23, 26, 32, 0.55);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(185, 193, 203, 0.08);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(183, 255, 54, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px -10px rgba(183, 255, 54, 0.2);
+        }
+
+        /* Metallic Text Effect */
+        .text-metallic {
+            background: linear-gradient(135deg, #FFFFFF 0%, #B9C1CB 50%, #646E7A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .text-neon {
+            color: #B7FF36;
+            text-shadow: 0 0 15px rgba(183, 255, 54, 0.45);
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #08090B;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #171A20;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B7FF36;
+        }
+
+        /* Canvas background overlay */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content-layer {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Custom Animations */
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(2deg); }
+        }
+
+        .animate-float {
+            animation: floatAnim 6s ease-in-out infinite;
+        }
+
+        /* 3D SVG Hair Mannequin Card Styles */
+        .mannequin-card-svg {
+            background: radial-gradient(circle at 50% 30%, #1c222d 0%, #0d0f14 70%, #08090B 100%);
+            border: 1px solid rgba(185, 193, 203, 0.15);
+            transition: all 0.4s ease;
+        }
+        .mannequin-card-svg:hover {
+            border-color: #B7FF36;
+            box-shadow: 0 0 25px rgba(183, 255, 54, 0.25);
+        }
+
+        /* Before/After Drag Slider */
+        .ba-slider-container {
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .ba-after-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .ba-before-img-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            overflow: hidden;
+            z-index: 2;
+            border-right: 2px solid #B7FF36;
+        }
+
+        .ba-before-img {
+            height: 100%;
+            max-width: none;
+            object-fit: cover;
+        }
+
+        .ba-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            cursor: ew-resize;
+        }
+    </style>
+</head>
+<body class="bg-nexus-bg text-white min-h-screen selection:bg-nexus-lime selection:text-black">
+
+    <!-- 3D WebGL Canvas Background -->
+    <div id="canvas-container"></div>
+
+    <!-- 01. INITIAL LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-nexus-bg transition-opacity duration-700">
+        <div class="relative flex items-center justify-center">
+            <div class="w-24 h-24 rounded-full border-2 border-nexus-lime/20 border-t-nexus-lime animate-spin"></div>
+            <div class="absolute text-2xl font-extrabold tracking-wider text-metallic">NEXUS</div>
+        </div>
+        <p class="mt-6 text-xs uppercase tracking-[0.3em] text-nexus-muted animate-pulse">Initializing Cyber Sculptures & Mainframe...</p>
+    </div>
+
+    <!-- MAIN APP CONTENT WRAPPER -->
+    <div class="content-layer">
+
+        <!-- 04. FLOATING GLASS NAVIGATION BAR -->
+        <header class="fixed top-0 left-0 right-0 z-40 px-4 lg:px-8 py-4 transition-all duration-300">
+            <div class="max-w-7xl mx-auto glass-nav rounded-2xl px-6 py-3 flex items-center justify-between">
+                <!-- Logo -->
+                <a href="#hero" class="flex items-center gap-2 group">
+                    <div class="w-9 h-9 rounded-xl bg-nexus-lime/10 border border-nexus-lime/30 flex items-center justify-center text-nexus-lime group-hover:bg-nexus-lime group-hover:text-black transition-all">
+                        <i class="fa-solid fa-cube"></i>
+                    </div>
+                    <span class="text-xl font-black tracking-widest text-metallic">NEXUS<span class="text-nexus-lime">.</span></span>
+                </a>
+
+                <!-- Desktop Nav Links -->
+                <nav class="hidden lg:flex items-center gap-7 text-xs font-semibold tracking-widest uppercase text-nexus-muted">
+                    <a href="#hero" class="hover:text-nexus-lime transition-colors">Home</a>
+                    <a href="#services" class="hover:text-nexus-lime transition-colors">Services</a>
+                    <a href="#hairstyles" class="hover:text-nexus-lime transition-colors">Sculpt Catalog</a>
+                    <a href="#barbers" class="hover:text-nexus-lime transition-colors">Statue Artisans</a>
+                    <a href="#before-after" class="hover:text-nexus-lime transition-colors">Transforms</a>
+                    <a href="#ai-assistant" class="hover:text-nexus-lime transition-colors flex items-center gap-1.5"><i class="fa-solid fa-sparkles text-nexus-lime"></i> AI 3D Studio</a>
+                    <a href="#shop" class="hover:text-nexus-lime transition-colors">Shop</a>
+                    <a href="#gallery" class="hover:text-nexus-lime transition-colors">Gallery</a>
+                </nav>
+
+                <!-- Action Controls -->
+                <div class="flex items-center gap-3">
+                    <!-- Cart Button -->
+                    <button onclick="toggleCartModal()" class="relative p-2.5 rounded-xl glass-card text-white hover:text-nexus-lime transition-colors">
+                        <i class="fa-solid fa-bag-shopping"></i>
+                        <span id="cart-badge" class="hidden absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-nexus-lime text-black font-mono text-[10px] font-bold flex items-center justify-center">0</span>
+                    </button>
+
+                    <!-- Account Dashboard -->
+                    <button onclick="openUserModal()" class="p-2.5 rounded-xl glass-card text-white hover:text-nexus-lime transition-colors" title="VIP Account">
+                        <i class="fa-solid fa-user-gear"></i>
+                    </button>
+
+                    <!-- Admin Toggle -->
+                    <button onclick="toggleAdminPanel()" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-nexus-muted hover:text-white hover:border-nexus-lime/50 transition-all">
+                        <i class="fa-solid fa-shield-halved"></i> Admin
+                    </button>
+
+                    <!-- Book Now Sticky Button -->
+                    <button onclick="openBookingModal()" class="px-5 py-2.5 rounded-xl bg-nexus-lime text-black font-bold text-xs uppercase tracking-widest hover:shadow-neon-lime hover:scale-105 transition-all">
+                        Book Now
+                    </button>
+
+                    <!-- Mobile Menu Trigger -->
+                    <button onclick="toggleMobileMenu()" class="lg:hidden p-2.5 text-white hover:text-nexus-lime">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="fixed inset-0 z-30 bg-nexus-bg/95 backdrop-blur-2xl hidden flex-col justify-center px-8 space-y-6 text-center text-lg uppercase tracking-widest font-bold">
+            <button onclick="toggleMobileMenu()" class="absolute top-6 right-6 text-2xl text-nexus-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            <a href="#hero" onclick="toggleMobileMenu()" class="hover:text-nexus-lime">Home</a>
+            <a href="#services" onclick="toggleMobileMenu()" class="hover:text-nexus-lime">Services</a>
+            <a href="#hairstyles" onclick="toggleMobileMenu()" class="hover:text-nexus-lime">Sculpt Catalog</a>
+            <a href="#barbers" onclick="toggleMobileMenu()" class="hover:text-nexus-lime">Statue Artisans</a>
+            <a href="#before-after" onclick="toggleMobileMenu()" class="hover:text-nexus-lime">Transforms</a>
+            <a href="#ai-assistant" onclick="toggleMobileMenu()" class="text-nexus-lime">AI 3D Studio</a>
+            <a href="#shop" onclick="toggleMobileMenu()" class="hover:text-nexus-lime">Shop</a>
+            <a href="#gallery" onclick="toggleMobileMenu()" class="hover:text-nexus-lime">Gallery</a>
+            <button onclick="toggleMobileMenu(); openAdminPanel()" class="text-xs font-mono text-nexus-muted flex items-center justify-center gap-2"><i class="fa-solid fa-shield-halved"></i> Access Admin Console</button>
+        </div>
+
+        <!-- 03. HERO SECTION WITH LIVE 3D SCULPTURE ENGINE -->
+        <section id="hero" class="relative min-h-screen flex items-center justify-center pt-24 pb-16 px-4">
+            <div class="max-w-5xl mx-auto text-center z-10 space-y-8">
+                <!-- Futuristic Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-nexus-lime/30 text-xs tracking-widest uppercase font-mono text-nexus-lime">
+                    <span class="w-2 h-2 rounded-full bg-nexus-lime animate-ping"></span>
+                    Interactive 3D Statue Architecture
+                </div>
+
+                <!-- Main Metallic Typography -->
+                <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight uppercase leading-none">
+                    YOUR STYLE.<br/>
+                    <span class="text-metallic">YOUR RULES.</span><br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-nexus-lime via-white to-nexus-chrome">CYBER SCULPTURE.</span>
+                </h1>
+
+                <!-- Subtitle -->
+                <p class="max-w-2xl mx-auto text-base sm:text-xl text-nexus-muted font-light tracking-wide">
+                    "Precision is not a service. It's a digital marble masterpiece." Experience futuristic grooming designed on 3D metallic busts and statues.
+                </p>
+
+                <!-- Hero Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                    <button onclick="openBookingModal()" class="w-full sm:w-auto px-8 py-4 rounded-xl bg-nexus-lime text-black font-extrabold text-sm uppercase tracking-widest shadow-neon-lime hover:scale-105 transition-all">
+                        <i class="fa-solid fa-calendar-check mr-2"></i> Book Appointment
+                    </button>
+                    <a href="#hairstyles" class="w-full sm:w-auto px-8 py-4 rounded-xl glass-card text-white font-bold text-sm uppercase tracking-widest hover:border-white/40 transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-cube mr-2 text-nexus-lime"></i> Explore 3D Sculptures
+                    </a>
+                </div>
+
+                <!-- 3D Controls hint -->
+                <div class="pt-16 flex flex-col items-center gap-3 text-nexus-muted">
+                    <span class="text-[10px] uppercase font-mono tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-arrows-spin text-nexus-lime animate-spin"></i> Move cursor to rotate Live 3D Head Bust & Scissors
+                    </span>
+                    <a href="#services" class="w-6 h-10 rounded-full border-2 border-white/20 flex items-start justify-center p-1.5">
+                        <div class="w-1.5 h-3 rounded-full bg-nexus-lime animate-bounce"></div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 04. SERVICES SECTION -->
+        <section id="services" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+                <div>
+                    <span class="text-xs font-mono text-nexus-lime uppercase tracking-widest">[ 01. EXCELLENCE ]</span>
+                    <h2 class="text-3xl sm:text-5xl font-black uppercase tracking-tight text-metallic mt-2">Signature Services</h2>
+                </div>
+                <p class="text-nexus-muted max-w-md text-sm font-light">
+                    Every cut is executed with surgical precision and customized to match your 3D cranial architecture.
+                </p>
+            </div>
+
+            <!-- Services Grid -->
+            <div id="services-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically Populated by JS -->
+            </div>
+        </section>
+
+        <!-- 05. HAIRSTYLE CATALOG (3D CYBER STATUES) -->
+        <section id="hairstyles" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto bg-nexus-dark/50 rounded-3xl border border-white/5 my-12">
+            <div class="text-center max-w-3xl mx-auto mb-12 space-y-4">
+                <span class="text-xs font-mono text-nexus-lime uppercase tracking-widest">[ 02. STATUE CATALOG ]</span>
+                <h2 class="text-3xl sm:text-5xl font-black uppercase text-metallic">3D Sculpted Hairstyles</h2>
+                <p class="text-nexus-muted text-sm">Explore our high-tech catalog of chiseled 3D marble and metallic head sculptures.</p>
+                
+                <!-- Search -->
+                <div class="pt-4 flex flex-col sm:flex-row items-center gap-4">
+                    <div class="relative w-full">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-nexus-muted"></i>
+                        <input type="text" id="style-search" oninput="filterHairstyles()" placeholder="Search 3D sculpt styles (e.g. Crop, Fade, Pompadour)..." class="w-full pl-11 pr-4 py-3 rounded-xl bg-nexus-card border border-white/10 text-sm focus:border-nexus-lime focus:outline-none transition-colors text-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hairstyles Grid -->
+            <div id="hairstyles-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Dynamically Populated -->
+            </div>
+        </section>
+
+        <!-- 06. INTERACTIVE BEFORE & AFTER SLIDER (3D SCULPTURE COMPARISON) -->
+        <section id="before-after" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="text-xs font-mono text-nexus-lime uppercase tracking-widest">[ 03. TRANSFORMATION ]</span>
+                <h2 class="text-3xl sm:text-5xl font-black uppercase text-metallic mt-2">Unstyled Bust vs. Sculpted Chrome Hair</h2>
+                <p class="text-nexus-muted text-sm mt-2">Drag the slider horizontally to compare an unstyled 3D head bust with a precision-sculpted cyber hair & beard mannequin.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto glass-panel p-4 rounded-3xl">
+                <div id="ba-container" class="ba-slider-container w-full h-[380px] sm:h-[520px] rounded-2xl cursor-ew-resize bg-nexus-dark flex items-center justify-center">
+                    <!-- After Image (Sculpted 3D Mannequin Hair Bust SVG) -->
+                    <div class="ba-after-img w-full h-full flex items-center justify-center bg-gradient-to-b from-nexus-dark to-black p-4">
+                        <svg class="w-full h-full max-h-[440px]" viewBox="0 0 400 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background Neon Grid Halo -->
+                            <circle cx="200" cy="200" r="140" fill="url(#neon-halo)" opacity="0.3"/>
+                            <!-- Shoulders & Neck (3D Metallic Bust) -->
+                            <path d="M110 380 Q200 350 290 380 L310 440 H90 Z" fill="url(#metal-bust)" stroke="#B9C1CB" stroke-width="1.5"/>
+                            <path d="M165 310 L160 360 Q200 375 240 360 L235 310 Z" fill="url(#metal-neck)" stroke="#858B94" stroke-width="1"/>
+                            <!-- Head Silhouette -->
+                            <path d="M150 170 Q140 230 160 280 Q200 315 240 280 Q260 230 250 170 Q250 130 200 125 Q150 130 150 170 Z" fill="url(#metal-head)" stroke="#B9C1CB" stroke-width="2"/>
+                            <!-- Ears & Facial Architecture -->
+                            <path d="M145 200 Q135 210 145 230" stroke="#B7FF36" stroke-width="2" fill="none"/>
+                            <path d="M255 200 Q265 210 255 230" stroke="#B7FF36" stroke-width="2" fill="none"/>
+                            <!-- Precision Sculpted Hair Cut (Textured High Fade & Quiff) -->
+                            <path d="M135 170 C135 120 160 70 200 70 C240 70 265 120 265 170 C250 165 240 160 220 165 C200 170 180 155 160 165 C145 160 140 165 135 170 Z" fill="url(#lime-hair-gradient)" stroke="#B7FF36" stroke-width="3"/>
+                            <!-- Detailed 3D Hair Texture Strands -->
+                            <path d="M170 85 Q200 110 230 90 M160 105 Q195 130 240 105 M150 125 Q190 145 250 125 M180 75 Q210 100 220 80" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"/>
+                            <!-- Chiseled Beard Sculpting -->
+                            <path d="M160 265 Q200 305 240 265 Q245 285 200 300 Q155 285 160 265 Z" fill="#B7FF36" opacity="0.9"/>
+                            <path d="M160 240 Q155 260 165 275 M240 240 Q245 260 235 275" stroke="#B7FF36" stroke-width="2"/>
+                            
+                            <!-- Gradients -->
+                            <defs>
+                                <radialGradient id="neon-halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(200 200) rotate(90) scale(140)">
+                                    <stop stop-color="#B7FF36"/>
+                                    <stop offset="1" stop-color="#B7FF36" stop-opacity="0"/>
+                                </radialGradient>
+                                <linearGradient id="metal-bust" x1="90" y1="350" x2="310" y2="440" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#171A20"/>
+                                    <stop offset="0.5" stop-color="#B9C1CB"/>
+                                    <stop offset="1" stop-color="#08090B"/>
+                                </linearGradient>
+                                <linearGradient id="metal-neck" x1="160" y1="310" x2="240" y2="365" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#08090B"/>
+                                    <stop offset="1" stop-color="#646E7A"/>
+                                </linearGradient>
+                                <linearGradient id="metal-head" x1="140" y1="125" x2="260" y2="315" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#1F242D"/>
+                                    <stop offset="0.5" stop-color="#B9C1CB"/>
+                                    <stop offset="1" stop-color="#111318"/>
+                                </linearGradient>
+                                <linearGradient id="lime-hair-gradient" x1="135" y1="70" x2="265" y2="170" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#B7FF36"/>
+                                    <stop offset="0.7" stop-color="#669900"/>
+                                    <stop offset="1" stop-color="#111318"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <div class="absolute top-4 right-4 z-10 px-3 py-1 rounded-full bg-nexus-lime text-black font-mono text-xs font-bold uppercase">Sculpted Hair & Beard 3D Mannequin</div>
+
+                    <!-- Before Image Wrapper (Unstyled Bare 3D Mannequin Bust) -->
+                    <div id="ba-before-wrapper" class="ba-before-img-wrapper bg-gradient-to-b from-nexus-bg to-nexus-dark">
+                        <div class="ba-before-img w-full h-full flex items-center justify-center p-4">
+                            <svg class="w-full h-full max-h-[440px]" viewBox="0 0 400 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Shoulders & Neck (Bare Unstyled) -->
+                                <path d="M110 380 Q200 350 290 380 L310 440 H90 Z" fill="#171A20" stroke="#646E7A" stroke-width="1.5"/>
+                                <path d="M165 310 L160 360 Q200 375 240 360 L235 310 Z" fill="#111318" stroke="#646E7A" stroke-width="1"/>
+                                <!-- Head Silhouette (Bald Bare Stone/Metal Mannequin) -->
+                                <path d="M150 170 Q140 230 160 280 Q200 315 240 280 Q260 230 250 170 Q250 125 200 120 Q150 125 150 170 Z" fill="#111318" stroke="#858B94" stroke-width="2"/>
+                                <!-- Smooth Bare Skull Guidelines -->
+                                <path d="M160 150 C180 135 220 135 240 150" stroke="#646E7A" stroke-width="1.5" stroke-dasharray="4 4"/>
+                                <path d="M150 180 C175 170 225 170 250 180" stroke="#646E7A" stroke-width="1.5" stroke-dasharray="4 4"/>
+                            </svg>
+                        </div>
+                        <div class="absolute top-4 left-4 z-10 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white font-mono text-xs font-bold uppercase">Bare Unstyled 3D Bust</div>
+                    </div>
+
+                    <!-- Slider Handle -->
+                    <div id="ba-handle" class="ba-handle w-10 h-10 rounded-full bg-nexus-lime text-black flex items-center justify-center shadow-neon-lime">
+                        <i class="fa-solid fa-arrows-left-right text-sm"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 07. BARBERS TEAM (3D STATUE ARTISANS) -->
+        <section id="barbers" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+                <div>
+                    <span class="text-xs font-mono text-nexus-lime uppercase tracking-widest">[ 04. MASTER SCULPTORS ]</span>
+                    <h2 class="text-3xl sm:text-5xl font-black uppercase tracking-tight text-metallic mt-2">Statue Artisans</h2>
+                </div>
+                <p class="text-nexus-muted max-w-md text-sm">
+                    Our elite team represented through iconic 3D metallic bust avatars and cybernetic sculptures.
+                </p>
+            </div>
+
+            <div id="barbers-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Populated via JS -->
+            </div>
+        </section>
+
+        <!-- 08. AI HAIRSTYLE ASSISTANT STUDIO (3D SCULPTURE VISION) -->
+        <section id="ai-assistant" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto my-12 glass-panel rounded-3xl relative overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-nexus-lime/10 blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-3xl mx-auto text-center space-y-4 mb-12">
+                <span class="px-3 py-1 rounded-full bg-nexus-lime/20 text-nexus-lime font-mono text-xs font-bold uppercase tracking-widest inline-flex items-center gap-2">
+                    <i class="fa-solid fa-microchip"></i> NEXUS 3D Statue Generator Engine
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-black uppercase text-metallic">AI Sculpture Studio</h2>
+                <p class="text-nexus-muted text-sm">Upload any face image or sculpt reference to generate a custom metallic 3D statue cut concept.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                <!-- Dropzone / Simulator -->
+                <div class="glass-card p-6 rounded-2xl flex flex-col items-center justify-center text-center min-h-[300px] border-dashed border-2 border-white/20 relative" id="ai-dropzone">
+                    <input type="file" id="ai-image-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleAiImageUpload(event)">
+                    
+                    <div id="ai-upload-prompt" class="space-y-4">
+                        <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-nexus-lime text-2xl mx-auto">
+                            <i class="fa-solid fa-cube"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm">Click or Drag Image Here</p>
+                            <p class="text-xs text-nexus-muted mt-1">Converts photo to 3D Chrome Bust (JPG, PNG)</p>
+                        </div>
+                    </div>
+
+                    <div id="ai-preview-wrapper" class="hidden w-full h-full relative">
+                        <img id="ai-uploaded-img" src="" alt="Uploaded Face" class="w-full h-64 object-cover rounded-xl">
+                        <button onclick="resetAiStudio()" class="absolute top-3 right-3 px-3 py-1 rounded-lg bg-black/70 text-xs font-mono text-white hover:text-nexus-lime"><i class="fa-solid fa-rotate-left"></i> Change</button>
+                    </div>
+                </div>
+
+                <!-- Controls & Output -->
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-mono uppercase text-nexus-muted mb-2">Select 3D Sculpture Preset</label>
+                        <select id="ai-style-select" class="w-full p-3.5 rounded-xl bg-nexus-card border border-white/10 text-white text-sm focus:border-nexus-lime focus:outline-none">
+                            <option value="Chrome Textured Bust">Chrome Textured Bust</option>
+                            <option value="Marble Low Fade Statue">Marble Low Fade Statue</option>
+                            <option value="Metallic Geometric Mullet">Metallic Geometric Mullet</option>
+                            <option value="Cybernetic Slick Back Bust">Cybernetic Slick Back Bust</option>
+                        </select>
+                    </div>
+
+                    <button onclick="generateAiPreview()" class="w-full py-4 rounded-xl bg-gradient-to-r from-nexus-lime to-emerald-400 text-black font-extrabold text-sm uppercase tracking-widest shadow-neon-lime hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Synthesize 3D Statue Concept
+                    </button>
+
+                    <!-- Rendered Result Display -->
+                    <div id="ai-result-box" class="hidden glass-card p-4 rounded-xl space-y-3 border border-nexus-lime/40">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-mono text-nexus-lime">3D Statue Render Complete</span>
+                            <span class="text-xs text-nexus-muted">Precision: 99.1%</span>
+                        </div>
+                        <div class="relative h-48 rounded-lg overflow-hidden">
+                            <img id="ai-result-img" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover">
+                            <div class="absolute bottom-2 left-2 px-2.5 py-1 rounded bg-black/80 font-mono text-[10px] text-nexus-lime" id="ai-result-label">3D Statue Concept</div>
+                        </div>
+                        <button onclick="bookWithAiStyle()" class="w-full py-2.5 rounded-lg bg-white/10 hover:bg-nexus-lime hover:text-black font-bold text-xs uppercase transition-all">
+                            Book Cut Based On This 3D Statue Look
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 09. GROOMING E-COMMERCE SHOP -->
+        <section id="shop" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4">
+                <div>
+                    <span class="text-xs font-mono text-nexus-lime uppercase tracking-widest">[ 05. FORMULATIONS ]</span>
+                    <h2 class="text-3xl sm:text-5xl font-black uppercase tracking-tight text-metallic mt-2">Cybernetics Shop</h2>
+                </div>
+                <p class="text-nexus-muted max-w-md text-sm">
+                    Professional grooming pomades, clays, and beard elixirs crafted for long-lasting hold and texture.
+                </p>
+            </div>
+
+            <div id="shop-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Dynamically Populated -->
+            </div>
+        </section>
+
+        <!-- 10. PHOTO & STATUE GALLERY -->
+        <section id="gallery" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="text-xs font-mono text-nexus-lime uppercase tracking-widest">[ 06. ARCHITECTURE ]</span>
+                <h2 class="text-3xl sm:text-5xl font-black uppercase text-metallic mt-2">3D Sculptural Sanctuary</h2>
+                <p class="text-nexus-muted text-sm mt-2">Visual gallery of metallic art installations and futuristic shop interiors.</p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="gallery-grid">
+                <!-- Dynamically Populated -->
+            </div>
+        </section>
+
+        <!-- 11. REVIEWS CAROUSEL -->
+        <section id="reviews" class="py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="text-xs font-mono text-nexus-lime uppercase tracking-widest">[ 07. TRANSMISSIONS ]</span>
+                <h2 class="text-3xl sm:text-5xl font-black uppercase text-metallic mt-2">Sculptural Reviews</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="reviews-grid">
+                <!-- Populated via JS -->
+            </div>
+        </section>
+
+        <!-- 12. FOOTER & LOCATION -->
+        <footer class="bg-nexus-dark border-t border-white/10 pt-16 pb-12 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-nexus-lime text-black flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-cube"></i>
+                        </div>
+                        <span class="text-xl font-black text-metallic">NEXUS</span>
+                    </div>
+                    <p class="text-nexus-muted text-xs leading-relaxed">
+                        Redefining male grooming through 3D sculpture architecture and cutting-edge aesthetic engineering.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-mono uppercase text-nexus-lime mb-4">Location & Hours</h4>
+                    <p class="text-xs text-nexus-muted leading-relaxed">
+                        77 Neo Boulevard, Cyber District<br/>
+                        Mon - Sat: 09:00 - 21:00<br/>
+                        Sunday: 10:00 - 18:00
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-mono uppercase text-nexus-lime mb-4">Direct Contact</h4>
+                    <p class="text-xs text-nexus-muted leading-relaxed">
+                        Phone: +1 (800) 555-NEXUS<br/>
+                        Telegram: @nexusbarber<br/>
+                        Email: info@nexusbarber.com
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-mono uppercase text-nexus-lime mb-4">Transmission</h4>
+                    <div class="flex gap-3 text-lg text-nexus-muted">
+                        <a href="#" class="hover:text-nexus-lime transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" class="hover:text-nexus-lime transition-colors"><i class="fa-brands fa-telegram"></i></a>
+                        <a href="#" class="hover:text-nexus-lime transition-colors"><i class="fa-brands fa-tiktok"></i></a>
+                        <a href="#" class="hover:text-nexus-lime transition-colors"><i class="fa-brands fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="max-w-7xl mx-auto pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-nexus-muted gap-4">
+                <p>&copy; 2026 NEXUS BARBER. All rights reserved. BEYOND THE STYLE.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:underline">Privacy Protocol</a>
+                    <a href="#" class="hover:underline">Terms of Service</a>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- MODAL 1: 7-STEP BOOKING WIZARD -->
+    <div id="booking-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-3xl rounded-3xl overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div class="p-6 border-b border-white/10 flex items-center justify-between bg-nexus-dark">
+                <div>
+                    <span class="text-[10px] font-mono text-nexus-lime uppercase tracking-widest">NEXUS RESERVATION ENGINE</span>
+                    <h3 class="text-xl font-black uppercase text-metallic" id="booking-step-title">Step 1: Select Service</h3>
+                </div>
+                <button onclick="closeBookingModal()" class="w-8 h-8 rounded-full bg-white/5 text-nexus-muted hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-nexus-card h-1">
+                <div id="booking-progress-bar" class="bg-nexus-lime h-full w-1/7 transition-all duration-300"></div>
+            </div>
+
+            <!-- Wizard Step Containers -->
+            <div class="p-6 overflow-y-auto flex-1 space-y-6">
+
+                <!-- STEP 1: SERVICES -->
+                <div id="step-1" class="space-y-4">
+                    <p class="text-xs text-nexus-muted">Choose your preferred grooming treatment:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="booking-services-list">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+
+                <!-- STEP 2: HAIRSTYLE STATUE -->
+                <div id="step-2" class="hidden space-y-4">
+                    <p class="text-xs text-nexus-muted">Select desired 3D haircut sculpture architecture:</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" id="booking-styles-list">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+
+                <!-- STEP 3: BARBER -->
+                <div id="step-3" class="hidden space-y-4">
+                    <p class="text-xs text-nexus-muted">Select your master statue artisan:</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="booking-barbers-list">
+                        <!-- JS injected -->
+                    </div>
+                </div>
+
+                <!-- STEP 4 & 5: DATE & TIME -->
+                <div id="step-4" class="hidden space-y-6">
+                    <div>
+                        <label class="block text-xs font-mono uppercase text-nexus-muted mb-2">Select Date</label>
+                        <input type="date" id="booking-date-input" onchange="generateTimeSlots()" class="w-full p-3.5 rounded-xl bg-nexus-card border border-white/10 text-white text-sm focus:border-nexus-lime">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono uppercase text-nexus-muted mb-2">Available Time Slots</label>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2.5" id="booking-slots-grid">
+                            <!-- JS injected -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 6: CUSTOMER DETAILS -->
+                <div id="step-5" class="hidden space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-mono uppercase text-nexus-muted mb-1">Full Name *</label>
+                            <input type="text" id="cust-name" placeholder="John Doe" class="w-full p-3 rounded-xl bg-nexus-card border border-white/10 text-sm text-white focus:border-nexus-lime">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono uppercase text-nexus-muted mb-1">Phone Number *</label>
+                            <input type="tel" id="cust-phone" placeholder="+1 (555) 000-0000" class="w-full p-3 rounded-xl bg-nexus-card border border-white/10 text-sm text-white focus:border-nexus-lime">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono uppercase text-nexus-muted mb-1">Email (Optional)</label>
+                        <input type="email" id="cust-email" placeholder="john@example.com" class="w-full p-3 rounded-xl bg-nexus-card border border-white/10 text-sm text-white focus:border-nexus-lime">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-mono uppercase text-nexus-muted mb-1">Additional Cyber Notes</label>
+                        <textarea id="cust-notes" rows="2" placeholder="Specific sculpt requests..." class="w-full p-3 rounded-xl bg-nexus-card border border-white/10 text-sm text-white focus:border-nexus-lime"></textarea>
+                    </div>
+                </div>
+
+                <!-- STEP 7: CONFIRMATION -->
+                <div id="step-6" class="hidden text-center space-y-4">
+                    <div class="w-16 h-16 rounded-full bg-nexus-lime/20 text-nexus-lime flex items-center justify-center text-2xl mx-auto border border-nexus-lime/40">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h4 class="text-2xl font-black uppercase text-metallic">Reservation Confirmed!</h4>
+                    <p class="text-xs text-nexus-muted">Your booking has been saved to the NEXUS mainframe database.</p>
+                    
+                    <div class="glass-card p-4 rounded-2xl max-w-md mx-auto text-left space-y-2 font-mono text-xs">
+                        <div class="flex justify-between border-b border-white/10 pb-2">
+                            <span class="text-nexus-muted">BOOKING ID:</span>
+                            <span class="text-nexus-lime font-bold" id="conf-id">#NX-0000</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-nexus-muted">Service:</span>
+                            <span id="conf-service" class="text-white">Signature Cut</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-nexus-muted">3D Style:</span>
+                            <span id="conf-style" class="text-white">Chrome Crop</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-nexus-muted">Statue Artisan:</span>
+                            <span id="conf-barber" class="text-white">Marcus V</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-nexus-muted">Date & Time:</span>
+                            <span id="conf-time" class="text-white">Tomorrow at 14:00</span>
+                        </div>
+                        <div class="flex justify-between border-t border-white/10 pt-2 font-bold text-sm">
+                            <span class="text-white">Total:</span>
+                            <span id="conf-price" class="text-nexus-lime">$45.00</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Navigation Buttons Footer -->
+            <div class="p-4 border-t border-white/10 bg-nexus-dark flex items-center justify-between">
+                <button id="booking-prev-btn" onclick="prevBookingStep()" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold uppercase transition-all hidden">
+                    Back
+                </button>
+                <div class="ml-auto">
+                    <button id="booking-next-btn" onclick="nextBookingStep()" class="px-6 py-2.5 rounded-xl bg-nexus-lime text-black font-extrabold text-xs uppercase tracking-widest hover:shadow-neon-lime transition-all">
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: SHOPPING CART MODAL -->
+    <div id="cart-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex justify-end">
+        <div class="w-full max-w-md bg-nexus-dark h-full border-l border-white/10 p-6 flex flex-col">
+            <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 class="text-xl font-black uppercase text-metallic"><i class="fa-solid fa-bag-shopping text-nexus-lime mr-2"></i> Grooming Cart</h3>
+                <button onclick="toggleCartModal()" class="text-nexus-muted hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <!-- Cart Items -->
+            <div id="cart-items-container" class="flex-1 overflow-y-auto py-4 space-y-3">
+                <!-- JS Populated -->
+            </div>
+
+            <!-- Checkout Footer -->
+            <div class="border-t border-white/10 pt-4 space-y-4">
+                <div class="flex items-center justify-between font-mono text-sm">
+                    <span class="text-nexus-muted">Subtotal</span>
+                    <span id="cart-subtotal" class="font-bold text-nexus-lime">$0.00</span>
+                </div>
+                <button onclick="checkoutCart()" class="w-full py-3.5 rounded-xl bg-nexus-lime text-black font-extrabold text-xs uppercase tracking-widest shadow-neon-lime hover:scale-105 transition-all">
+                    Proceed to Cyber Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CUSTOMER VIP ACCOUNT DASHBOARD -->
+    <div id="user-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 space-y-6 max-h-[90vh] overflow-y-auto relative">
+            <button onclick="closeUserModal()" class="absolute top-6 right-6 text-nexus-muted hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-nexus-lime/10 border border-nexus-lime/30 text-nexus-lime flex items-center justify-center text-2xl font-bold">
+                    NX
+                </div>
+                <div>
+                    <h3 class="text-2xl font-black uppercase text-metallic">Cyber VIP Pass</h3>
+                    <p class="text-xs text-nexus-muted font-mono">ID: #CUST-8849-2026</p>
+                </div>
+            </div>
+
+            <!-- Loyalty Barcode Card -->
+            <div class="p-6 rounded-2xl bg-gradient-to-br from-nexus-card via-nexus-dark to-black border border-nexus-lime/30 shadow-neon-glow relative overflow-hidden space-y-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-mono uppercase text-nexus-lime tracking-widest">MEMBERSHIP LEVEL</span>
+                        <h4 class="text-xl font-extrabold uppercase text-white">VIP Cyber Sculptor</h4>
+                    </div>
+                    <i class="fa-solid fa-crown text-nexus-lime text-2xl"></i>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between text-xs font-mono mb-1">
+                        <span class="text-nexus-muted">Loyalty Balance</span>
+                        <span class="text-nexus-lime">1,450 / 2,000 PTS</span>
+                    </div>
+                    <div class="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                        <div class="h-full bg-nexus-lime w-[72%]"></div>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-white/10 flex items-center justify-between font-mono text-[10px] text-nexus-muted">
+                    <span>STATUS: ACTIVE</span>
+                    <span>NEXUS SYNCED</span>
+                </div>
+            </div>
+
+            <!-- User Appointments -->
+            <div>
+                <h4 class="text-xs font-mono uppercase text-nexus-lime mb-3">Your Bookings History</h4>
+                <div id="user-appointments-list" class="space-y-2">
+                    <!-- Populated JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: SECURE ADMIN CONSOLE -->
+    <div id="admin-panel" class="fixed inset-0 z-50 bg-nexus-bg hidden flex flex-col">
+        <!-- Header -->
+        <div class="p-4 bg-nexus-dark border-b border-white/10 flex items-center justify-between px-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-nexus-lime text-black flex items-center justify-center font-bold">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="text-lg font-black uppercase text-metallic">NEXUS Mainframe Admin Console</h3>
+            </div>
+            <button onclick="closeAdminPanel()" class="px-4 py-2 rounded-xl bg-white/10 text-xs uppercase font-bold text-white hover:bg-nexus-lime hover:text-black">
+                Exit Admin
+            </button>
+        </div>
+
+        <div class="flex-1 flex overflow-hidden">
+            <!-- Sidebar -->
+            <div class="w-64 bg-nexus-dark border-r border-white/10 p-4 space-y-2 hidden md:block">
+                <button onclick="switchAdminTab('bookings')" class="w-full text-left p-3 rounded-xl bg-nexus-lime/10 text-nexus-lime font-mono text-xs uppercase font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Bookings Manager
+                </button>
+                <button onclick="switchAdminTab('services')" class="w-full text-left p-3 rounded-xl text-nexus-muted hover:bg-white/5 font-mono text-xs uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-cube"></i> Service Prices
+                </button>
+                <button onclick="switchAdminTab('analytics')" class="w-full text-left p-3 rounded-xl text-nexus-muted hover:bg-white/5 font-mono text-xs uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> Revenue Analytics
+                </button>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 p-6 overflow-y-auto space-y-6">
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-nexus-lime">
+                        <span class="text-[10px] font-mono text-nexus-muted uppercase">Total Revenue</span>
+                        <p class="text-2xl font-black text-white mt-1">$14,890.00</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-blue-400">
+                        <span class="text-[10px] font-mono text-nexus-muted uppercase">Total Bookings</span>
+                        <p class="text-2xl font-black text-white mt-1" id="admin-count-bookings">0</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-emerald-400">
+                        <span class="text-[10px] font-mono text-nexus-muted uppercase">Completed</span>
+                        <p class="text-2xl font-black text-white mt-1">128</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border-l-4 border-red-400">
+                        <span class="text-[10px] font-mono text-nexus-muted uppercase">Cancelled</span>
+                        <p class="text-2xl font-black text-white mt-1">4</p>
+                    </div>
+                </div>
+
+                <!-- Admin Bookings Table -->
+                <div class="glass-panel p-6 rounded-2xl space-y-4">
+                    <h4 class="text-sm font-mono uppercase text-nexus-lime">Active Reservations Database</h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead class="border-b border-white/10 text-nexus-muted uppercase">
+                                <tr>
+                                    <th class="py-3 px-2">ID</th>
+                                    <th class="py-3 px-2">Customer</th>
+                                    <th class="py-3 px-2">Service</th>
+                                    <th class="py-3 px-2">Artisan</th>
+                                    <th class="py-3 px-2">Date/Time</th>
+                                    <th class="py-3 px-2">Status</th>
+                                    <th class="py-3 px-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-bookings-table-body" class="divide-y divide-white/5">
+                                <!-- JS Injected -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT APPLICATION CODE -->
+    <script>
+        /* ==========================================================================
+           1. DATA STORES (HYPER-REALISTIC 3D HAIRSTYLE SCULPTURE & MANNEQUIN BUSTS)
+           ========================================================================== */
+        
+        // Advanced dynamic renderer for highly detailed, lifelike 3D hair architecture & realistic marble/metallic busts
+        function create3DHairMannequinSVG(hairStyleType, primaryColor = "#B7FF36", hairDetailColor = "#FFFFFF") {
+            const uid = Math.random().toString(36).substring(2, 9);
+            
+            let hairStrandsPath = "";
+            let hairVolumeGroup = "";
+            let beardGroup = "";
+
+            if (hairStyleType === 'crop') {
+                // High-density textured French/Cyber Crop
+                hairVolumeGroup = `
+                    <path d="M132 165 C130 100 155 55 200 55 C245 55 270 100 268 165 C252 150 232 152 200 150 C168 152 148 150 132 165 Z" fill="url(#hair-base-${uid})" filter="url(#drop-shadow-${uid})"/>
+                `;
+                hairStrandsPath = `
+                    <!-- Layered Strand Texture -->
+                    <path d="M145 80 Q175 110 205 75 M170 65 Q205 105 235 70 M185 60 Q225 95 255 75" stroke="${hairDetailColor}" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+                    <path d="M138 120 Q170 145 205 125 M165 105 Q205 135 245 110 M195 95 Q235 125 262 105" stroke="${hairDetailColor}" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                    <path d="M142 145 Q175 160 210 145 M178 135 Q215 155 252 135" stroke="${primaryColor}" stroke-width="2" opacity="0.95"/>
+                    <!-- Micro Fringe Highlights -->
+                    <path d="M140 155 L150 162 M160 153 L172 163 M185 152 L198 163 M210 151 L222 162 M235 153 L248 162 M255 155 L263 160" stroke="${primaryColor}" stroke-width="2.5" stroke-linecap="round"/>
+                `;
+            } else if (hairStyleType === 'pompadour') {
+                // High-volume 3D Pompadour with directional wave flow
+                hairVolumeGroup = `
+                    <path d="M130 160 C120 75 145 35 200 35 C255 35 280 75 270 160 C252 142 230 138 200 142 C170 138 148 142 130 160 Z" fill="url(#hair-base-${uid})" filter="url(#drop-shadow-${uid})"/>
+                `;
+                hairStrandsPath = `
+                    <path d="M145 55 C175 80 220 50 255 65" stroke="${hairDetailColor}" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.95"/>
+                    <path d="M140 80 C175 110 225 75 260 90" stroke="${hairDetailColor}" stroke-width="3.5" stroke-linecap="round" fill="none" opacity="0.85"/>
+                    <path d="M138 110 C175 135 225 105 262 120" stroke="${primaryColor}" stroke-width="3" stroke-linecap="round" fill="none"/>
+                    <path d="M150 40 Q200 15 245 40" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+                `;
+            } else if (hairStyleType === 'lowfade') {
+                // Precision Low Fade & Sleek Sculpted Top
+                hairVolumeGroup = `
+                    <path d="M138 155 C138 105 160 70 200 70 C240 70 262 105 262 155 C248 148 228 148 200 150 C172 148 152 148 138 155 Z" fill="url(#hair-base-${uid})"/>
+                `;
+                hairStrandsPath = `
+                    <path d="M145 90 L255 90 M142 110 L258 110 M140 130 L260 130" stroke="${hairDetailColor}" stroke-width="2.5" stroke-dasharray="8 4" opacity="0.85"/>
+                    <path d="M160 78 L240 78 M155 100 L245 100 M150 120 L250 120" stroke="${primaryColor}" stroke-width="2"/>
+                `;
+            } else if (hairStyleType === 'mullet') {
+                // Cyber Geometric Mullet with extended back flow
+                hairVolumeGroup = `
+                    <path d="M130 160 C130 90 155 55 200 55 C245 55 270 90 270 160 C285 220 278 285 265 305 C235 275 165 275 135 305 C122 285 115 220 130 160 Z" fill="url(#hair-base-${uid})" filter="url(#drop-shadow-${uid})"/>
+                `;
+                hairStrandsPath = `
+                    <path d="M155 70 Q200 100 245 70 M145 95 Q200 125 255 95 M140 125 Q200 150 260 125" stroke="${hairDetailColor}" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M128 200 C135 240 130 280 142 298 M272 200 C265 240 270 280 258 298" stroke="${primaryColor}" stroke-width="3.5" stroke-linecap="round"/>
+                `;
+            } else if (hairStyleType === 'skinfade') {
+                // Skin Fade with Textured Top Quiff & Chiseled Beard
+                hairVolumeGroup = `
+                    <path d="M142 148 C142 98 162 58 200 58 C238 58 258 98 258 148 C244 142 226 142 200 145 C174 142 156 142 142 148 Z" fill="url(#hair-base-${uid})"/>
+                `;
+                hairStrandsPath = `
+                    <path d="M152 75 Q190 115 238 75 M158 95 Q200 130 242 95 M162 115 Q200 145 238 120" stroke="${hairDetailColor}" stroke-width="3" stroke-linecap="round"/>
+                `;
+                beardGroup = `
+                    <path d="M158 255 C152 280 170 310 200 310 C230 310 248 280 242 255 C248 275 232 298 200 298 C168 298 152 275 158 255 Z" fill="url(#hair-base-${uid})"/>
+                    <path d="M160 265 Q200 300 240 265" stroke="${primaryColor}" stroke-width="3.5" fill="none"/>
+                `;
+            } else {
+                // Taper Fade Refined Classic
+                hairVolumeGroup = `
+                    <path d="M135 155 C135 100 158 65 200 65 C242 65 265 100 265 155 Z" fill="url(#hair-base-${uid})"/>
+                `;
+                hairStrandsPath = `
+                    <path d="M148 85 Q200 110 252 85 M152 110 Q200 135 248 110 M155 130 Q200 150 245 130" stroke="${hairDetailColor}" stroke-width="2.5"/>
+                `;
+            }
+
+            return `
+                <svg class="w-full h-full max-h-[260px] mx-auto" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- Dynamic Shading Gradients -->
+                        <radialGradient id="bg-glow-${uid}" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(200 180) rotate(90) scale(160)">
+                            <stop stop-color="${primaryColor}" stop-opacity="0.25"/>
+                            <stop offset="1" stop-color="#08090B" stop-opacity="0"/>
+                        </radialGradient>
+                        <linearGradient id="bust-marble-${uid}" x1="100" y1="310" x2="300" y2="400" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#222834"/>
+                            <stop offset="0.4" stop-color="#B9C1CB"/>
+                            <stop offset="0.8" stop-color="#111318"/>
+                            <stop offset="1" stop-color="#08090B"/>
+                        </linearGradient>
+                        <linearGradient id="head-sculpt-${uid}" x1="140" y1="110" x2="260" y2="300" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#2D3544"/>
+                            <stop offset="0.3" stop-color="#E2E8F0"/>
+                            <stop offset="0.75" stop-color="#171A20"/>
+                            <stop offset="1" stop-color="#0B0D11"/>
+                        </linearGradient>
+                        <linearGradient id="hair-base-${uid}" x1="130" y1="40" x2="270" y2="180" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="${primaryColor}"/>
+                            <stop offset="0.6" stop-color="#4D7C0F"/>
+                            <stop offset="1" stop-color="#111318"/>
+                        </linearGradient>
+                        <!-- Drop Shadow Filter for 3D Depth -->
+                        <filter id="drop-shadow-${uid}" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#000000" flood-opacity="0.7"/>
+                        </filter>
+                    </defs>
+
+                    <!-- Background Atmospheric Halo -->
+                    <circle cx="200" cy="180" r="140" fill="url(#bg-glow-${uid})"/>
+                    
+                    <!-- Shoulders (3D Metallic/Marble Bust Base) -->
+                    <path d="M115 335 Q200 305 285 335 L300 400 H100 Z" fill="url(#bust-marble-${uid})" stroke="#B9C1CB" stroke-width="1.5" filter="url(#drop-shadow-${uid})"/>
+                    <path d="M165 275 L160 320 Q200 335 240 320 L235 275 Z" fill="#111318" stroke="#858B94" stroke-width="1"/>
+                    
+                    <!-- 3D Anatomical Head Bust Base -->
+                    <path d="M148 155 Q136 215 158 260 Q200 298 242 260 Q264 215 252 155 Q252 115 200 110 Q148 115 148 155 Z" fill="url(#head-sculpt-${uid})" stroke="#B9C1CB" stroke-width="2" filter="url(#drop-shadow-${uid})"/>
+                    
+                    <!-- Realistic Ears & Anatomical Contours -->
+                    <path d="M144 190 C134 200 134 220 144 230" stroke="${primaryColor}" stroke-width="2.5" fill="none"/>
+                    <path d="M256 190 C266 200 266 220 256 230" stroke="${primaryColor}" stroke-width="2.5" fill="none"/>
+                    <!-- Cheekbone & Jaw Contour Highlights -->
+                    <path d="M165 225 Q180 245 200 248 Q220 245 235 225" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" fill="none"/>
+                    <path d="M185 268 H215" stroke="${primaryColor}" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+
+                    <!-- 3D Hair & Beard Volume Layers -->
+                    ${hairVolumeGroup}
+                    ${hairStrandsPath}
+                    ${beardGroup}
+                </svg>
+            `;
+        }
+
+        const SERVICES_DATA = [
+            { id: 's1', name: 'Signature Sculpt Cut', desc: 'Chiseled precision cut on 3D cranial architecture, hot towel finish.', price: 45, duration: '45 Min', styleType: 'crop' },
+            { id: 's2', name: 'Low Fade Chrome Blend', desc: 'Seamless low fade blending into custom sculpted length.', price: 40, duration: '40 Min', styleType: 'lowfade' },
+            { id: 's3', name: 'Mid Fade Cyber Bust', desc: 'Clean mid fade transition tailored to 3D head profile.', price: 40, duration: '40 Min', styleType: 'crop' },
+            { id: 's4', name: 'High Fade Razor Edge', desc: 'High contrasting fade with razor line alignment.', price: 42, duration: '45 Min', styleType: 'skinfade' },
+            { id: 's5', name: 'Zero Metallic Skin Fade', desc: 'Faded down to smooth bare skin mannequin finish.', price: 45, duration: '45 Min', styleType: 'skinfade' },
+            { id: 's6', name: 'Taper Fade Classic Marble', desc: 'Subtle temple & neck taper fade for refined profile.', price: 38, duration: '35 Min', styleType: 'taper' },
+            { id: 's7', name: 'Beard Sculpting & Steam', desc: 'Hot steam treatment, razor line & cyber beard shaping.', price: 35, duration: '30 Min', styleType: 'skinfade' },
+            { id: 's8', name: 'Hair & Beard Combo', desc: 'Full signature sculpt cut + full 3D beard sculpting.', price: 70, duration: '75 Min', styleType: 'mullet' },
+            { id: 's9', name: 'VIP Cyber Experience', desc: 'Cut, beard, facial mask, beverage & head spa treatment.', price: 110, duration: '90 Min', styleType: 'pompadour' }
+        ];
+
+        const HAIRSTYLES_DATA = [
+            { id: 'h1', title: 'Chrome Textured Crop', cat: 'Textured Crop', styleType: 'crop', color: '#B7FF36' },
+            { id: 'h2', title: 'Marble Slick Pompadour', cat: 'Pompadour', styleType: 'pompadour', color: '#FFFFFF' },
+            { id: 'h3', title: 'Executive Low Fade Bust', cat: 'Low Fade', styleType: 'lowfade', color: '#B9C1CB' },
+            { id: 'h4', title: 'Geometric Cyber Mullet', cat: 'Modern Mullet', styleType: 'mullet', color: '#B7FF36' },
+            { id: 'h5', title: 'Obsidian Skin Fade Quiff', cat: 'Skin Fade', styleType: 'skinfade', color: '#38BDF8' },
+            { id: 'h6', title: 'Metallic Taper Crop', cat: 'Taper Fade', styleType: 'taper', color: '#FACC15' }
+        ];
+
+        const BARBERS_DATA = [
+            { id: 'b1', name: 'Marcus V — Chrome Master', role: 'Head 3D Sculptor', exp: '10 Yrs Exp', rating: '4.9 ★', styleType: 'pompadour' },
+            { id: 'b2', name: 'Alex K — Cyber Artisan', role: 'Fade Specialist', exp: '8 Yrs Exp', rating: '5.0 ★', styleType: 'skinfade' },
+            { id: 'b3', name: 'Victor R — Marble Craft', role: 'Beard Sculptor', exp: '12 Yrs Exp', rating: '4.9 ★', styleType: 'mullet' }
+        ];
+
+        const SHOP_DATA = [
+            { id: 'p1', name: 'NEXUS Matte Clay', price: 28, desc: 'High hold matte finish clay pomade.', imgIcon: 'fa-box-tissue' },
+            { id: 'p2', name: 'Cyber Elixir Beard Oil', price: 32, desc: 'Nourishing cedar & argon oil elixir.', imgIcon: 'fa-bottle-droplet' },
+            { id: 'p3', name: 'Styling Dust Powder', price: 24, desc: 'Instant weightless volume powder.', imgIcon: 'fa-wind' },
+            { id: 'p4', name: 'Silver Chrome Shampoo', price: 26, desc: 'Revitalizing daily scalp cleanser.', imgIcon: 'fa-pump-soap' }
+        ];
+
+        // Global State variables
+        let cart = [];
+        let bookingsState = JSON.parse(localStorage.getItem('nexus_bookings')) || [
+            { id: 'NX-8821', service: 'Signature Sculpt Cut', style: 'Chrome Crop', barber: 'Marcus V — Chrome Master', time: '2026-11-10 14:00', price: '$45.00', status: 'Confirmed', customer: 'David K.' }
+        ];
+
+        let bookingForm = {
+            service: null,
+            style: null,
+            barber: null,
+            date: null,
+            time: null,
+            name: '',
+            phone: ''
+        };
+        let currentStep = 1;
+
+        /* ==========================================================================
+           2. THREE.JS 3D CANVAS & HYPER-DYNAMIC BUST SCULPTURE ENGINE
+           ========================================================================== */
+        let scene, camera, renderer, cyberGroup, particles;
+
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x08090B, 0.03);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 7;
+
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Lighting Setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const limePointLight = new THREE.PointLight(0xB7FF36, 4, 25);
+            limePointLight.position.set(3, 4, 3);
+            scene.add(limePointLight);
+
+            const chromeDirectional = new THREE.DirectionalLight(0xffffff, 2);
+            chromeDirectional.position.set(-5, 5, 5);
+            scene.add(chromeDirectional);
+
+            // Build Floating 3D Cybernetic Bust & Scissors Assembly
+            cyberGroup = new THREE.Group();
+
+            const chromeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xB9C1CB,
+                metalness: 0.95,
+                roughness: 0.1,
+                wireframe: false
+            });
+
+            const wireframeMaterial = new THREE.MeshStandardMaterial({
+                color: 0xB7FF36,
+                wireframe: true,
+                emissive: 0xB7FF36,
+                emissiveIntensity: 0.4
+            });
+
+            // 3D Metallic Head/Bust Geometry (Abstract Sculpture)
+            const headGeo = new THREE.IcosahedronGeometry(1.4, 2);
+            const headBust = new THREE.Mesh(headGeo, chromeMaterial);
+            headBust.position.set(0, 0, 0);
+
+            // Wireframe Cyber Core inside Head
+            const coreGeo = new THREE.IcosahedronGeometry(1.6, 1);
+            const coreMesh = new THREE.Mesh(coreGeo, wireframeMaterial);
+            coreMesh.position.set(0, 0, 0);
+
+            // Floating Metallic Scissors Geometry
+            const bladeGeo = new THREE.ConeGeometry(0.25, 3.5, 32);
+            const blade1 = new THREE.Mesh(bladeGeo, chromeMaterial);
+            blade1.rotation.z = -Math.PI / 6;
+            blade1.position.set(-1.8, 0.5, 0.5);
+
+            const blade2 = new THREE.Mesh(bladeGeo, chromeMaterial);
+            blade2.rotation.z = Math.PI / 6;
+            blade2.position.set(1.8, 0.5, 0.5);
+
+            cyberGroup.add(headBust);
+            cyberGroup.add(coreMesh);
+            cyberGroup.add(blade1);
+            cyberGroup.add(blade2);
+
+            scene.add(cyberGroup);
+
+            // Glowing Dynamic Particle Field
+            const particleGeo = new THREE.BufferGeometry();
+            const count = 400;
+            const posArray = new Float32Array(count * 3);
+
+            for (let i = 0; i < count * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 25;
+            }
+
+            particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const particleMat = new THREE.PointsMaterial({
+                size: 0.04,
+                color: 0xB7FF36,
+                transparent: true,
+                opacity: 0.65
+            });
+
+            particles = new THREE.Points(particleGeo, particleMat);
+            scene.add(particles);
+
+            // Interactive Mouse Move Listener
+            window.addEventListener('mousemove', (e) => {
+                const mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+                const mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+
+                cyberGroup.rotation.y = mouseX * 0.6;
+                cyberGroup.rotation.x = mouseY * 0.4;
+            });
+
+            // Window Resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // Animation Loop (Continuous 3D Spin & Float)
+            function animate() {
+                requestAnimationFrame(animate);
+                cyberGroup.rotation.y += 0.006;
+                coreMesh.rotation.x += 0.008;
+                particles.rotation.y += 0.001;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        /* ==========================================================================
+           3. UI RENDER FUNCTIONS & DOM BINDINGS (3D MANNEQUINS ONLY)
+           ========================================================================== */
+
+        function renderServices() {
+            const container = document.getElementById('services-grid');
+            container.innerHTML = SERVICES_DATA.map(s => `
+                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between group">
+                    <div class="space-y-4">
+                        <div class="h-52 rounded-xl overflow-hidden relative mannequin-card-svg p-2 flex items-center justify-center">
+                            ${create3DHairMannequinSVG(s.styleType, "#B7FF36")}
+                            <div class="absolute top-3 right-3 px-3 py-1 rounded-full bg-black/80 backdrop-blur-md font-mono text-xs text-nexus-lime font-bold">
+                                $${s.price}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-mono text-nexus-muted uppercase">${s.duration} Treatment</span>
+                            <h3 class="text-xl font-bold uppercase text-white group-hover:text-nexus-lime transition-colors mt-1">${s.name}</h3>
+                            <p class="text-xs text-nexus-muted mt-2 leading-relaxed">${s.desc}</p>
+                        </div>
+                    </div>
+                    <button onclick="quickBookService('${s.id}')" class="mt-6 w-full py-3 rounded-xl bg-white/5 hover:bg-nexus-lime hover:text-black font-bold text-xs uppercase tracking-widest transition-all">
+                        Book Treatment
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderHairstyles() {
+            const grid = document.getElementById('hairstyles-grid');
+            grid.innerHTML = HAIRSTYLES_DATA.map(h => `
+                <div class="glass-card rounded-2xl overflow-hidden group">
+                    <div class="h-64 overflow-hidden relative mannequin-card-svg flex items-center justify-center p-2">
+                        ${create3DHairMannequinSVG(h.styleType, h.color)}
+                        <span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-black/90 font-mono text-[10px] text-nexus-lime border border-nexus-lime/30">${h.cat}</span>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <h4 class="font-bold text-sm uppercase text-white">${h.title}</h4>
+                        <button onclick="quickBookStyle('${h.title}')" class="w-full py-2 rounded-lg bg-white/5 hover:bg-nexus-lime hover:text-black font-mono text-xs uppercase font-semibold transition-all">
+                            Select 3D Cut
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterHairstyles() {
+            const query = document.getElementById('style-search').value.toLowerCase();
+            const grid = document.getElementById('hairstyles-grid');
+            const filtered = HAIRSTYLES_DATA.filter(h => h.title.toLowerCase().includes(query) || h.cat.toLowerCase().includes(query));
+            
+            grid.innerHTML = filtered.map(h => `
+                <div class="glass-card rounded-2xl overflow-hidden group">
+                    <div class="h-64 overflow-hidden relative mannequin-card-svg flex items-center justify-center p-2">
+                        ${create3DHairMannequinSVG(h.styleType, h.color)}
+                        <span class="absolute bottom-3 left-3 px-2.5 py-1 rounded-md bg-black/90 font-mono text-[10px] text-nexus-lime border border-nexus-lime/30">${h.cat}</span>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <h4 class="font-bold text-sm uppercase text-white">${h.title}</h4>
+                        <button onclick="quickBookStyle('${h.title}')" class="w-full py-2 rounded-lg bg-white/5 hover:bg-nexus-lime hover:text-black font-mono text-xs uppercase font-semibold transition-all">
+                            Select 3D Cut
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderBarbers() {
+            const container = document.getElementById('barbers-grid');
+            container.innerHTML = BARBERS_DATA.map(b => `
+                <div class="glass-card p-6 rounded-2xl text-center space-y-4 group">
+                    <div class="w-36 h-36 rounded-full overflow-hidden mx-auto border-2 border-nexus-lime/30 p-2 group-hover:border-nexus-lime transition-all relative mannequin-card-svg flex items-center justify-center">
+                        ${create3DHairMannequinSVG(b.styleType, '#B7FF36')}
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold uppercase text-white">${b.name}</h3>
+                        <p class="text-xs font-mono text-nexus-lime mt-1">${b.role} • ${b.exp}</p>
+                    </div>
+                    <div class="inline-flex items-center gap-1 text-xs text-yellow-400 font-bold bg-white/5 px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-star"></i> ${b.rating}
+                    </div>
+                    <button onclick="quickBookBarber('${b.name}')" class="w-full py-3 rounded-xl bg-white/5 hover:bg-nexus-lime hover:text-black font-bold text-xs uppercase tracking-widest transition-all">
+                        Book Artisan
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function renderShop() {
+            const container = document.getElementById('shop-grid');
+            container.innerHTML = SHOP_DATA.map(p => `
+                <div class="glass-card p-5 rounded-2xl flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="h-44 rounded-xl overflow-hidden bg-nexus-dark/80 border border-white/5 p-4 flex flex-col items-center justify-center text-nexus-lime">
+                            <i class="fa-solid ${p.imgIcon} text-5xl mb-2 opacity-80"></i>
+                            <span class="text-[10px] font-mono text-nexus-muted uppercase">3D Grooming Product</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-white">${p.name}</h4>
+                            <p class="text-xs text-nexus-muted mt-1">${p.desc}</p>
+                        </div>
+                    </div>
+                    <div class="pt-4 flex items-center justify-between border-t border-white/5 mt-4">
+                        <span class="font-mono text-sm font-bold text-nexus-lime">$${p.price}.00</span>
+                        <button onclick="addToCart('${p.id}')" class="px-3.5 py-2 rounded-lg bg-nexus-lime text-black font-bold text-xs uppercase hover:scale-105 transition-all">
+                            Add To Cart
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGallery() {
+            const styles = ['crop', 'pompadour', 'mullet', 'skinfade', 'lowfade', 'taper'];
+            const colors = ['#B7FF36', '#FFFFFF', '#38BDF8', '#FACC15', '#B9C1CB', '#A855F7'];
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = styles.map((st, idx) => `
+                <div class="h-56 rounded-2xl overflow-hidden glass-card p-2 flex items-center justify-center border border-nexus-lime/20 hover:border-nexus-lime">
+                    ${create3DHairMannequinSVG(st, colors[idx])}
+                </div>
+            `).join('');
+        }
+
+        function renderReviews() {
+            const reviews = [
+                { name: 'Cyber Sculpture Unit A7', text: 'Best metallic fade in the city. The 3D hairstyle mannequin catalog gave me full vision before sitting down.', rating: 5 },
+                { name: 'Marble Art Collector', text: 'Supreme precision. The 3D hair mannequins look insanely clear and accurate.', rating: 5 },
+                { name: 'Chrome Resident', text: 'Marcus V transformed my entire look based on the 3D hair mannequin preset. Highly recommend!', rating: 5 }
+            ];
+            const grid = document.getElementById('reviews-grid');
+            grid.innerHTML = reviews.map(r => `
+                <div class="glass-card p-6 rounded-2xl space-y-4">
+                    <div class="flex text-nexus-lime text-xs gap-1">
+                        ${'<i class="fa-solid fa-star"></i>'.repeat(r.rating)}
+                    </div>
+                    <p class="text-xs text-nexus-muted italic leading-relaxed">"${r.text}"</p>
+                    <div class="pt-2 border-t border-white/5 flex items-center gap-2">
+                        <div class="w-7 h-7 rounded-full bg-nexus-lime/20 text-nexus-lime font-bold text-xs flex items-center justify-center"><i class="fa-solid fa-cube"></i></div>
+                        <span class="text-xs font-bold text-white">${r.name}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* ==========================================================================
+           4. BEFORE / AFTER INTERACTIVE SLIDER LOGIC
+           ========================================================================== */
+        function initBeforeAfterSlider() {
+            const container = document.getElementById('ba-container');
+            const beforeWrapper = document.getElementById('ba-before-wrapper');
+            const handle = document.getElementById('ba-handle');
+
+            let isDragging = false;
+
+            function updateSliderPosition(x) {
+                const rect = container.getBoundingClientRect();
+                let position = ((x - rect.left) / rect.width) * 100;
+
+                if (position < 0) position = 0;
+                if (position > 100) position = 100;
+
+                beforeWrapper.style.width = `${position}%`;
+                handle.style.left = `${position}%`;
+            }
+
+            container.addEventListener('mousedown', () => isDragging = true);
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                updateSliderPosition(e.clientX);
+            });
+
+            container.addEventListener('touchstart', () => isDragging = true);
+            window.addEventListener('touchend', () => isDragging = false);
+            window.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                updateSliderPosition(e.touches[0].clientX);
+            });
+        }
+
+        /* ==========================================================================
+           5. SMART BOOKING SYSTEM WIZARD
+           ========================================================================== */
+        function openBookingModal() {
+            document.getElementById('booking-modal').classList.remove('hidden');
+            currentStep = 1;
+            updateBookingStepUI();
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        function updateBookingStepUI() {
+            const progressBar = document.getElementById('booking-progress-bar');
+            const stepTitle = document.getElementById('booking-step-title');
+            const prevBtn = document.getElementById('booking-prev-btn');
+
+            progressBar.style.width = `${(currentStep / 6) * 100}%`;
+
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById(`step-${i}`);
+                if (el) el.classList.add('hidden');
+            }
+
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+
+            if (currentStep > 1 && currentStep < 6) prevBtn.classList.remove('hidden');
+            else prevBtn.classList.add('hidden');
+
+            const titles = [
+                'Step 1: Select Service',
+                'Step 2: Select 3D Hairstyle',
+                'Step 3: Select Statue Artisan',
+                'Step 4: Pick Date & Time',
+                'Step 5: Customer Information',
+                'Step 6: Confirmation'
+            ];
+            stepTitle.innerText = titles[currentStep - 1];
+
+            if (currentStep === 1) renderBookingServices();
+            if (currentStep === 2) renderBookingStyles();
+            if (currentStep === 3) renderBookingBarbers();
+            if (currentStep === 4) generateTimeSlots();
+        }
+
+        function renderBookingServices() {
+            const list = document.getElementById('booking-services-list');
+            list.innerHTML = SERVICES_DATA.map(s => `
+                <div onclick="selectBookingService('${s.name}', ${s.price})" class="glass-card p-3 rounded-xl cursor-pointer flex items-center justify-between border ${bookingForm.service === s.name ? 'border-nexus-lime bg-nexus-lime/10' : 'border-white/10'}">
+                    <div>
+                        <h5 class="font-bold text-xs text-white">${s.name}</h5>
+                        <span class="text-[10px] text-nexus-muted">${s.duration}</span>
+                    </div>
+                    <span class="font-mono text-xs text-nexus-lime font-bold">$${s.price}</span>
+                </div>
+            `).join('');
+        }
+
+        function selectBookingService(name, price) {
+            bookingForm.service = name;
+            bookingForm.price = price;
+            renderBookingServices();
+        }
+
+        function renderBookingStyles() {
+            const list = document.getElementById('booking-styles-list');
+            list.innerHTML = HAIRSTYLES_DATA.map(h => `
+                <div onclick="selectBookingStyle('${h.title}')" class="glass-card p-3 rounded-xl cursor-pointer text-center border ${bookingForm.style === h.title ? 'border-nexus-lime bg-nexus-lime/10' : 'border-white/10'} flex flex-col items-center">
+                    <div class="w-full h-24 mb-1 flex items-center justify-center">
+                        ${create3DHairMannequinSVG(h.styleType, h.color)}
+                    </div>
+                    <span class="font-bold text-[11px] text-white">${h.title}</span>
+                </div>
+            `).join('');
+        }
+
+        function selectBookingStyle(title) {
+            bookingForm.style = title;
+            renderBookingStyles();
+        }
+
+        function renderBookingBarbers() {
+            const list = document.getElementById('booking-barbers-list');
+            list.innerHTML = BARBERS_DATA.map(b => `
+                <div onclick="selectBookingBarber('${b.name}')" class="glass-card p-4 rounded-xl cursor-pointer text-center border ${bookingForm.barber === b.name ? 'border-nexus-lime bg-nexus-lime/10' : 'border-white/10'}">
+                    <div class="w-14 h-14 mx-auto mb-2 flex items-center justify-center">
+                        ${create3DHairMannequinSVG(b.styleType, '#B7FF36')}
+                    </div>
+                    <h5 class="font-bold text-xs text-white">${b.name}</h5>
+                    <span class="text-[10px] text-nexus-lime font-mono">${b.role}</span>
+                </div>
+            `).join('');
+        }
+
+        function selectBookingBarber(name) {
+            bookingForm.barber = name;
+            renderBookingBarbers();
+        }
+
+        function generateTimeSlots() {
+            const grid = document.getElementById('booking-slots-grid');
+            const slots = ['09:00', '10:30', '12:00', '14:00', '15:30', '17:00', '18:30', '20:00'];
+            grid.innerHTML = slots.map(slot => `
+                <button onclick="selectBookingTime('${slot}')" class="py-2 rounded-lg bg-nexus-card border ${bookingForm.time === slot ? 'border-nexus-lime bg-nexus-lime text-black font-bold' : 'border-white/10 text-xs font-mono text-white'} hover:border-nexus-lime">
+                    ${slot}
+                </button>
+            `).join('');
+        }
+
+        function selectBookingTime(slot) {
+            bookingForm.time = slot;
+            generateTimeSlots();
+        }
+
+        function nextBookingStep() {
+            if (currentStep === 1 && !bookingForm.service) return alert('Please select a service.');
+            if (currentStep === 2 && !bookingForm.style) return alert('Please select a hairstyle.');
+            if (currentStep === 3 && !bookingForm.barber) return alert('Please select a statue artisan.');
+            if (currentStep === 4 && (!bookingForm.time || !document.getElementById('booking-date-input').value)) return alert('Please choose date and time slot.');
+
+            if (currentStep === 5) {
+                const name = document.getElementById('cust-name').value;
+                const phone = document.getElementById('cust-phone').value;
+                if (!name || !phone) return alert('Please enter your name and phone number.');
+                
+                bookingForm.name = name;
+                bookingForm.phone = phone;
+
+                // Save Booking to Database/State
+                const bookingId = `NX-${Math.floor(1000 + Math.random() * 9000)}`;
+                const newBooking = {
+                    id: bookingId,
+                    service: bookingForm.service,
+                    style: bookingForm.style,
+                    barber: bookingForm.barber,
+                    time: `${document.getElementById('booking-date-input').value} ${bookingForm.time}`,
+                    price: `$${bookingForm.price}.00`,
+                    status: 'Confirmed',
+                    customer: bookingForm.name
+                };
+
+                bookingsState.push(newBooking);
+                localStorage.setItem('nexus_bookings', JSON.stringify(bookingsState));
+
+                // Populate confirmation UI
+                document.getElementById('conf-id').innerText = `#${bookingId}`;
+                document.getElementById('conf-service').innerText = bookingForm.service;
+                document.getElementById('conf-style').innerText = bookingForm.style;
+                document.getElementById('conf-barber').innerText = bookingForm.barber;
+                document.getElementById('conf-time').innerText = `${document.getElementById('booking-date-input').value} at ${bookingForm.time}`;
+                document.getElementById('conf-price').innerText = `$${bookingForm.price}.00`;
+                
+                document.getElementById('booking-next-btn').innerText = 'Finish';
+            }
+
+            if (currentStep === 6) {
+                closeBookingModal();
+                return;
+            }
+
+            currentStep++;
+            updateBookingStepUI();
+        }
+
+        function prevBookingStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateBookingStepUI();
+            }
+        }
+
+        function quickBookService(id) {
+            const s = SERVICES_DATA.find(serv => serv.id === id);
+            if (s) {
+                bookingForm.service = s.name;
+                bookingForm.price = s.price;
+                openBookingModal();
+                currentStep = 2;
+                updateBookingStepUI();
+            }
+        }
+
+        function quickBookStyle(title) {
+            bookingForm.style = title;
+            openBookingModal();
+            currentStep = 3;
+            updateBookingStepUI();
+        }
+
+        function quickBookBarber(name) {
+            bookingForm.barber = name;
+            openBookingModal();
+            currentStep = 4;
+            updateBookingStepUI();
+        }
+
+        /* ==========================================================================
+           6. SHOPPING CART LOGIC
+           ========================================================================== */
+        function toggleCartModal() {
+            document.getElementById('cart-modal').classList.toggle('hidden');
+        }
+
+        function addToCart(pId) {
+            const product = SHOP_DATA.find(p => p.id === pId);
+            if (product) {
+                cart.push(product);
+                updateCartUI();
+                toggleCartModal();
+            }
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const badge = document.getElementById('cart-badge');
+            const subtotalEl = document.getElementById('cart-subtotal');
+
+            badge.innerText = cart.length;
+            if (cart.length > 0) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            subtotalEl.innerText = `$${total}.00`;
+
+            container.innerHTML = cart.map((item, index) => `
+                <div class="glass-card p-3 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <img src="${item.img}" class="w-12 h-12 object-cover rounded-lg">
+                        <div>
+                            <h5 class="font-bold text-xs text-white">${item.name}</h5>
+                            <span class="font-mono text-xs text-nexus-lime">$${item.price}.00</span>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${index})" class="text-nexus-muted hover:text-red-400 p-2">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function checkoutCart() {
+            if (cart.length === 0) return alert('Your cart is empty.');
+            alert('Order Transmitted! Your grooming products will be dispatched.');
+            cart = [];
+            updateCartUI();
+            toggleCartModal();
+        }
+
+        /* ==========================================================================
+           7. AI STUDIO SIMULATION
+           ========================================================================== */
+        function handleAiImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    document.getElementById('ai-uploaded-img').src = evt.target.result;
+                    document.getElementById('ai-upload-prompt').classList.add('hidden');
+                    document.getElementById('ai-preview-wrapper').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resetAiStudio() {
+            document.getElementById('ai-upload-prompt').classList.remove('hidden');
+            document.getElementById('ai-preview-wrapper').classList.add('hidden');
+            document.getElementById('ai-result-box').classList.add('hidden');
+        }
+
+        function generateAiPreview() {
+            const style = document.getElementById('ai-style-select').value;
+            const resultBox = document.getElementById('ai-result-box');
+            document.getElementById('ai-result-label').innerText = style;
+
+            let styleType = 'crop';
+            if (style.includes('Marble')) styleType = 'lowfade';
+            if (style.includes('Mullet')) styleType = 'mullet';
+            if (style.includes('Slick')) styleType = 'pompadour';
+
+            // Insert 3D Hair Mannequin into AI Result Container
+            const imgContainer = document.getElementById('ai-result-img').parentElement;
+            imgContainer.innerHTML = `
+                <div class="w-full h-full bg-nexus-dark flex items-center justify-center p-2 rounded-lg border border-nexus-lime/30">
+                    ${create3DHairMannequinSVG(styleType, '#B7FF36')}
+                </div>
+                <div class="absolute bottom-2 left-2 px-2.5 py-1 rounded bg-black/80 font-mono text-[10px] text-nexus-lime" id="ai-result-label">${style}</div>
+            `;
+
+            resultBox.classList.remove('hidden');
+        }
+
+        function bookWithAiStyle() {
+            const style = document.getElementById('ai-style-select').value;
+            bookingForm.style = style;
+            openBookingModal();
+        }
+
+        /* ==========================================================================
+           8. USER VIP MODAL & ADMIN PANEL
+           ========================================================================== */
+        function openUserModal() {
+            document.getElementById('user-modal').classList.remove('hidden');
+            renderUserAppointments();
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-modal').classList.add('hidden');
+        }
+
+        function renderUserAppointments() {
+            const list = document.getElementById('user-appointments-list');
+            list.innerHTML = bookingsState.map(b => `
+                <div class="glass-card p-3 rounded-xl font-mono text-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-nexus-lime font-bold">${b.id}</span> — ${b.service}
+                        <p class="text-[10px] text-nexus-muted">${b.time} with ${b.barber}</p>
+                    </div>
+                    <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">${b.status}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleAdminPanel() {
+            document.getElementById('admin-panel').classList.toggle('hidden');
+            renderAdminBookings();
+        }
+
+        function openAdminPanel() {
+            document.getElementById('admin-panel').classList.remove('hidden');
+            renderAdminBookings();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('admin-panel').classList.add('hidden');
+        }
+
+        function renderAdminBookings() {
+            const tbody = document.getElementById('admin-bookings-table-body');
+            document.getElementById('admin-count-bookings').innerText = bookingsState.length;
+
+            tbody.innerHTML = bookingsState.map(b => `
+                <tr>
+                    <td class="py-3 px-2 text-nexus-lime font-bold">${b.id}</td>
+                    <td class="py-3 px-2 text-white">${b.customer}</td>
+                    <td class="py-3 px-2">${b.service}</td>
+                    <td class="py-3 px-2">${b.barber}</td>
+                    <td class="py-3 px-2">${b.time}</td>
+                    <td class="py-3 px-2"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px]">${b.status}</span></td>
+                    <td class="py-3 px-2">
+                        <button onclick="cancelBookingAdmin('${b.id}')" class="text-red-400 hover:underline text-[10px]">Cancel</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function cancelBookingAdmin(id) {
+            const booking = bookingsState.find(b => b.id === id);
+            if (booking) {
+                booking.status = 'Cancelled';
+                localStorage.setItem('nexus_bookings', JSON.stringify(bookingsState));
+                renderAdminBookings();
+            }
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+            document.getElementById('mobile-menu').classList.toggle('flex');
+        }
+
+        /* ==========================================================================
+           9. INITIALIZATION ON WINDOW LOAD
+           ========================================================================== */
+        window.onload = function() {
+            // Hide Loader after 1s
+            setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                loader.classList.add('opacity-0');
+                setTimeout(() => loader.remove(), 700);
+            }, 1000);
+
+            // Initialize Components
+            initThreeJS();
+            renderServices();
+            renderHairstyles();
+            renderBarbers();
+            renderShop();
+            renderGallery();
+            renderReviews();
+            initBeforeAfterSlider();
+        };
+    </script>
+</body>
+</html>
